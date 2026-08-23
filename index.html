@@ -517,7 +517,7 @@
         </p>
       </div>
       <div class="hero-visual">
-        <img class="hero-photo" src="https://i.pinimg.com/736x/3c/ed/fc/3cedfc91311cc8e52ed4f273fd8bbacb.jpg" alt="Yumikaai 3D clipart characters — nurse and chef bundle art">
+        <img class="hero-photo" src="/img/hero.jpg" alt="Yumikaai 3D clipart characters — nurse and chef bundle art">
         <span class="hero-photo-tag">300 DPI · PNG</span>
       </div>
     </div>
@@ -589,55 +589,60 @@
 
    HOW TO ADD A NEW BUNDLE:
    1. Add a new { ... } entry below (copy an existing one as a template).
-   2. img       → a photo URL. Easiest: right-click the pin's image on
-                  Pinterest → "Copy image address". Or host the file
-                  yourself in an /images folder next to this HTML and
-                  use a relative path like "images/my-bundle.jpg".
+   2. img       → a LOCAL path like "/img/my-bundle.jpg", NOT a raw
+                  i.pinimg.com link. Raw Pinterest links get blocked by
+                  many ad blockers / tracker-protection lists on visitors'
+                  browsers, which is why thumbnails were disappearing.
+                  To add the image: pick the Pinterest pin, add one line
+                  to the _redirects file at the repo root mapping
+                  "/img/my-bundle.jpg  <pinterest image URL>  200" — this
+                  makes Netlify fetch it server-side and serve it from
+                  yumikaai.com itself, so it always loads for visitors.
    3. title     → the collection/category name shown on the card.
    4. desc      → one short selling sentence.
    5. tag       → the small label under the divider, e.g. "40–60 PNG per bundle".
    6. accent    → one of: "coral", "teal", "mustard", "plum" (controls the card's tag color).
-   7. Save this file and re-deploy it to Netlify (drag & drop the
-      folder again, or push to GitHub if this site is connected to a repo).
+   7. Save this file and _redirects, then push to GitHub — Netlify
+      redeploys automatically.
 ================================================================= */
 const PRODUCTS = [
   {
-    img: "https://i.pinimg.com/736x/35/0d/a9/350da97ebd5db1d048c6b7d622656bf9.jpg",
+    img: "/img/healthcare-teacher.jpg",
     title: "Healthcare &amp; Teacher Characters",
     desc: "Nurses, doctors, and classroom characters with the warmth of a hand-drawn cast — a top seller across the shop.",
     tag: "40–72 PNG per bundle",
     accent: "coral"
   },
   {
-    img: "https://i.pinimg.com/736x/dc/e4/02/dce40233c582eeb99b5760dd70355246.jpg",
+    img: "/img/woodland-animals.jpg",
     title: "Woodland &amp; Peeking Animals",
     desc: "Cozy foxes, axolotls and grumpy peeking pets built for planners, nursery art and stickers.",
     tag: "44–63 PNG per bundle",
     accent: "teal"
   },
   {
-    img: "https://i.pinimg.com/736x/70/e0/48/70e048b53cdcdb5f7e9551a18725020f.jpg",
+    img: "/img/wedding-couples.jpg",
     title: "Wedding &amp; Couples",
     desc: "Bride-and-groom casts in traditional and modern styles, built for invitations and sublimation keepsakes.",
     tag: "56–76 PNG per bundle",
     accent: "mustard"
   },
   {
-    img: "https://i.pinimg.com/736x/1f/d9/67/1fd9675cf56fdc40ccbf93c84dff2d34.jpg",
+    img: "/img/moroccan-arab.jpg",
     title: "Moroccan &amp; Arab Characters",
     desc: "Souk vendors, hammam workers and everyday heroes — a cast you genuinely won't find anywhere else on Etsy.",
     tag: "41–67 PNG per bundle",
     accent: "plum"
   },
   {
-    img: "https://i.pinimg.com/736x/47/c1/79/47c179c105891d73fd75b1a0193e6895.jpg",
+    img: "/img/cozy-chibi.jpg",
     title: "Cozy &amp; Chibi Lifestyle Girls",
     desc: "Bookish, coffee-loving, self-care characters made for planner stickers and junk journals.",
     tag: "39–73 PNG per bundle",
     accent: "coral"
   },
   {
-    img: "https://i.pinimg.com/736x/ea/5d/d1/ea5dd1fa961b9f7429649dd2a9b0e5c5.jpg",
+    img: "/img/seasonal-fantasy.jpg",
     title: "Seasonal &amp; Fantasy Casts",
     desc: "Winter woodland, ghosts, mermaids and grandparents — fresh themes added through the year.",
     tag: "38–52 PNG per bundle",

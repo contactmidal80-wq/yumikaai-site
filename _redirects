@@ -1,0 +1,12 @@
+# Proxy Pinterest-hosted product photos through yumikaai.com itself.
+# This fixes thumbnails disappearing for visitors whose browser/ad-blocker
+# blocks third-party requests to i.pinimg.com (common with tracker-protection
+# lists). Netlify fetches the image server-side and serves it from our own
+# domain, so the browser never talks to pinimg.com directly.
+/img/hero.jpg                 https://i.pinimg.com/736x/3c/ed/fc/3cedfc91311cc8e52ed4f273fd8bbacb.jpg  200
+/img/healthcare-teacher.jpg   https://i.pinimg.com/736x/35/0d/a9/350da97ebd5db1d048c6b7d622656bf9.jpg  200
+/img/woodland-animals.jpg     https://i.pinimg.com/736x/dc/e4/02/dce40233c582eeb99b5760dd70355246.jpg  200
+/img/wedding-couples.jpg      https://i.pinimg.com/736x/70/e0/48/70e048b53cdcdb5f7e9551a18725020f.jpg  200
+/img/moroccan-arab.jpg        https://i.pinimg.com/736x/1f/d9/67/1fd9675cf56fdc40ccbf93c84dff2d34.jpg  200
+/img/cozy-chibi.jpg           https://i.pinimg.com/736x/47/c1/79/47c179c105891d73fd75b1a0193e6895.jpg  200
+/img/seasonal-fantasy.jpg     https://i.pinimg.com/736x/ea/5d/d1/ea5dd1fa961b9f7429649dd2a9b0e5c5.jpg  200
