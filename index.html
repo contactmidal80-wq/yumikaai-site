@@ -164,11 +164,19 @@
     padding: 48px 0 84px;
     position: relative;
   }
+  .hero-canvas{
+    position:absolute;
+    inset: -20px;
+    z-index:0;
+    pointer-events:none;
+  }
   .hero-grid{
     display:grid;
     grid-template-columns: 1.1fr 0.9fr;
     gap: 48px;
     align-items:center;
+    position:relative;
+    z-index:1;
   }
   .stamp{
     display:inline-flex;
@@ -271,7 +279,6 @@
     box-shadow: 0 18px 36px var(--shadow);
     transform: rotate(-2.5deg);
     object-fit: cover;
-    animation: float1 7s ease-in-out infinite;
   }
   .hero-photo-tag{
     position:absolute;
@@ -289,10 +296,9 @@
     transform: rotate(4deg);
   }
 
-  @keyframes float1{ 0%,100%{ transform: rotate(-2.5deg) translateY(0);} 50%{ transform: rotate(-2.5deg) translateY(-10px);} }
   @media (prefers-reduced-motion: reduce){
-    .hero-photo{ animation: none !important; }
     .btn-primary{ transition:none; }
+    .hero-canvas{ display:none; }
   }
 
   /* ---------- Section shared ---------- */
@@ -494,6 +500,7 @@
 
 <div class="wrap" id="top">
   <section class="hero">
+    <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
     <div class="hero-grid">
       <div>
         <span class="stamp">
@@ -662,6 +669,113 @@ function renderProducts(){
   `).join('');
 }
 renderProducts();
+
+/* ==============================================================
+   HERO CURSOR EFFECT — a handful of brand-colored dots that scatter
+   softly away from the pointer, then ease back home. Fully still
+   until the visitor moves their mouse over the hero (no idle/auto
+   motion), and skipped entirely under prefers-reduced-motion.
+================================================================= */
+(function heroCanvasEffect(){
+  const canvas = document.getElementById('heroCanvas');
+  const hero = document.querySelector('.hero');
+  if (!canvas || !hero) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const ctx = canvas.getContext('2d');
+  const DOT_COLORS = ['#e2552b', '#177f77', '#e79a2c', '#7a4f74'];
+  const DOT_COUNT = 46;
+  const INFLUENCE = 110;   // px radius of pointer influence
+  const PUSH = 34;         // max px a dot is pushed away
+  const EASE = 0.12;       // how quickly dots move each frame
+
+  let dots = [];
+  let width = 0, height = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let pointer = null;      // {x,y} in canvas coords, or null when idle
+  let running = false;
+
+  function seedDots(){
+    dots = [];
+    for (let i = 0; i < DOT_COUNT; i++){
+      const hx = Math.random() * width;
+      const hy = Math.random() * height;
+      dots.push({
+        hx, hy, x: hx, y: hy,
+        r: 2.5 + Math.random() * 4.5,
+        color: DOT_COLORS[i % DOT_COLORS.length],
+        alpha: 0.18 + Math.random() * 0.28,
+      });
+    }
+  }
+
+  function resize(){
+    const rect = hero.getBoundingClientRect();
+    width = rect.width; height = rect.height;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    seedDots();
+    draw();
+  }
+
+  function draw(){
+    ctx.clearRect(0, 0, width, height);
+    for (const d of dots){
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = d.color;
+      ctx.globalAlpha = d.alpha;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function settled(){
+    return dots.every(d => Math.hypot(d.x - d.hx, d.y - d.hy) < 0.4);
+  }
+
+  function tick(){
+    for (const d of dots){
+      let tx = d.hx, ty = d.hy;
+      if (pointer){
+        const dx = d.hx - pointer.x, dy = d.hy - pointer.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < INFLUENCE && dist > 0.01){
+          const strength = (1 - dist / INFLUENCE) * PUSH;
+          tx = d.hx + (dx / dist) * strength;
+          ty = d.hy + (dy / dist) * strength;
+        }
+      }
+      d.x += (tx - d.x) * EASE;
+      d.y += (ty - d.y) * EASE;
+    }
+    draw();
+    if (pointer || !settled()){
+      requestAnimationFrame(tick);
+    } else {
+      running = false; // idle again — stop the loop entirely
+    }
+  }
+
+  function ensureRunning(){
+    if (!running){ running = true; requestAnimationFrame(tick); }
+  }
+
+  hero.addEventListener('pointermove', (e) => {
+    const rect = hero.getBoundingClientRect();
+    pointer = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    ensureRunning();
+  });
+  hero.addEventListener('pointerleave', () => {
+    pointer = null;
+    ensureRunning(); // let dots ease back home, then it stops itself
+  });
+
+  window.addEventListener('resize', resize);
+  resize();
+})();
 </script>
 
 </body>
