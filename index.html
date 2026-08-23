@@ -533,11 +533,11 @@
   <section id="collections">
     <div class="section-head">
       <span class="label">Collections</span>
-      <h2>Six casts of characters, one commercial license</h2>
-      <p>Every bundle ships as transparent PNG at 300 DPI, cleared for sublimation, stickers, print on demand and craft resale.</p>
+      <h2>Every character bundle, one commercial license</h2>
+      <p>Every bundle ships as transparent PNG at 300 DPI, cleared for sublimation, stickers, print on demand and craft resale. Synced live from the Etsy shop — new drops show up here automatically.</p>
     </div>
     <div class="sticker-grid" id="stickerGrid">
-      <!-- Cards are rendered from the PRODUCTS list at the bottom of this file. -->
+      <!-- Cards are rendered live from /api/products (see script at the bottom of this file). -->
     </div>
   </section>
 
@@ -591,82 +591,39 @@
 
 <script>
 /* ==============================================================
-   PRODUCT COLLECTIONS — edit this list to add, remove, or reorder
-   the cards on the site. No other part of the file needs to change.
-
-   HOW TO ADD A NEW BUNDLE:
-   1. Add a new { ... } entry below (copy an existing one as a template).
-   2. img       → a LOCAL path like "/img/my-bundle.jpg", NOT a raw
-                  i.pinimg.com link. Raw Pinterest links get blocked by
-                  many ad blockers / tracker-protection lists on visitors'
-                  browsers, which is why thumbnails were disappearing.
-                  To add the image: pick the Pinterest pin, add one line
-                  to the _redirects file at the repo root mapping
-                  "/img/my-bundle.jpg  <pinterest image URL>  200" — this
-                  makes Netlify fetch it server-side and serve it from
-                  yumikaai.com itself, so it always loads for visitors.
-   3. title     → the collection/category name shown on the card.
-   4. desc      → one short selling sentence.
-   5. tag       → the small label under the divider, e.g. "40–60 PNG per bundle".
-   6. accent    → one of: "coral", "teal", "mustard", "plum" (controls the card's tag color).
-   7. Save this file and _redirects, then push to GitHub — Netlify
-      redeploys automatically.
+   PRODUCT GRID — loaded live from /api/products, a Netlify Function
+   that reads the yumikaai Etsy shop's real active listings server-side
+   (see netlify/functions/products.js). Nothing to edit here when a new
+   bundle is published on Etsy — it appears on the next page load (the
+   function caches for 15 minutes, so allow up to that long).
 ================================================================= */
-const PRODUCTS = [
-  {
-    img: "/img/healthcare-teacher.jpg",
-    title: "Healthcare &amp; Teacher Characters",
-    desc: "Nurses, doctors, and classroom characters with the warmth of a hand-drawn cast — a top seller across the shop.",
-    tag: "40–72 PNG per bundle",
-    accent: "coral"
-  },
-  {
-    img: "/img/woodland-animals.jpg",
-    title: "Woodland &amp; Peeking Animals",
-    desc: "Cozy foxes, axolotls and grumpy peeking pets built for planners, nursery art and stickers.",
-    tag: "44–63 PNG per bundle",
-    accent: "teal"
-  },
-  {
-    img: "/img/wedding-couples.jpg",
-    title: "Wedding &amp; Couples",
-    desc: "Bride-and-groom casts in traditional and modern styles, built for invitations and sublimation keepsakes.",
-    tag: "56–76 PNG per bundle",
-    accent: "mustard"
-  },
-  {
-    img: "/img/moroccan-arab.jpg",
-    title: "Moroccan &amp; Arab Characters",
-    desc: "Souk vendors, hammam workers and everyday heroes — a cast you genuinely won't find anywhere else on Etsy.",
-    tag: "41–67 PNG per bundle",
-    accent: "plum"
-  },
-  {
-    img: "/img/cozy-chibi.jpg",
-    title: "Cozy &amp; Chibi Lifestyle Girls",
-    desc: "Bookish, coffee-loving, self-care characters made for planner stickers and junk journals.",
-    tag: "39–73 PNG per bundle",
-    accent: "coral"
-  },
-  {
-    img: "/img/seasonal-fantasy.jpg",
-    title: "Seasonal &amp; Fantasy Casts",
-    desc: "Winter woodland, ghosts, mermaids and grandparents — fresh themes added through the year.",
-    tag: "38–52 PNG per bundle",
-    accent: "teal"
-  }
-];
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
 
-function renderProducts(){
+async function renderProducts(){
   const grid = document.getElementById('stickerGrid');
-  grid.innerHTML = PRODUCTS.map(p => `
-    <article class="sticker s-${p.accent}">
-      <div class="photo-frame"><img src="${p.img}" alt="${p.title.replace(/&amp;/g,'&')} — Yumikaai clipart bundle" loading="lazy"></div>
-      <h3>${p.title}</h3>
-      <p>${p.desc}</p>
-      <span class="tag">${p.tag}</span>
-    </article>
-  `).join('');
+  try {
+    const res = await fetch('/api/products');
+    if (!res.ok) throw new Error('bad response ' + res.status);
+    const products = await res.json();
+    if (!Array.isArray(products) || products.length === 0) throw new Error('empty');
+
+    grid.innerHTML = products.map(p => `
+      <article class="sticker s-${p.accent}">
+        <div class="photo-frame"><img src="${p.img}" alt="${escapeHtml(p.title)} — Yumikaai clipart bundle" loading="lazy"></div>
+        <h3>${escapeHtml(p.title)}</h3>
+        <p>${escapeHtml(p.desc)}</p>
+        <span class="tag">${escapeHtml(p.tag)}</span>
+      </article>
+    `).join('');
+  } catch (err) {
+    grid.innerHTML = `
+      <p style="grid-column:1/-1; color:var(--ink-soft)">
+        Couldn't load the live catalog right now — browse everything directly on
+        <a href="https://yumikaai.etsy.com" target="_blank" rel="noopener" style="color:var(--coral); font-weight:700">Etsy</a>.
+      </p>`;
+  }
 }
 renderProducts();
 
