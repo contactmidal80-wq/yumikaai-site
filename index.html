@@ -25,6 +25,21 @@
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23fbf3e7'/%3E%3Ccircle cx='9' cy='16' r='4' fill='%23e2552b'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%23e79a2c'/%3E%3Ccircle cx='23' cy='16' r='4' fill='%23177f77'/%3E%3C/svg%3E">
 
+<!-- ============================================================
+  PINTEREST TAG (conversion tracking for Pinterest Ads)
+  Tag ID 2613486422996, on the claimed domain yumikaai.com.
+  Fires 'pagevisit' on load; the script at the bottom of this file
+  also fires 'lead' whenever a visitor clicks through to Etsy —
+  that click is the strongest buying signal we can measure, since
+  the purchase itself completes on etsy.com where no tag can run.
+============================================================= -->
+<script>
+!function(e){if(!window.pintrk){window.pintrk=function(){window.pintrk.queue.push(Array.prototype.slice.call(arguments))};var n=window.pintrk;n.queue=[],n.version="3.0";var t=document.createElement("script");t.async=!0,t.src=e;var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r)}}("https://s.pinimg.com/ct/core.js");
+pintrk('load', '2613486422996');
+pintrk('page');
+</script>
+<noscript><img height="1" width="1" style="display:none" alt="" src="https://ct.pinterest.com/v3/?event=init&tid=2613486422996&noscript=1"></noscript>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -760,6 +775,50 @@ async function renderProducts(){
   }
 }
 renderProducts();
+
+/* ==============================================================
+   ETSY CLICK TRACKING — closes the measurement loop for ads.
+
+   The purchase happens on etsy.com, where we can't run a tag. So the
+   click OUT to Etsy is the deepest conversion we can actually measure,
+   and it's what Pinterest campaigns should optimize toward.
+
+   Two things happen on every Etsy click:
+   1. pintrk 'lead' — an optimizable Pinterest conversion event.
+   2. UTM parameters are appended, so Etsy's own Shop Stats attributes
+      the visit (and any resulting sale) back to this site.
+================================================================= */
+(function trackEtsyClicks(){
+  const UTM = { utm_source: 'yumikaai_site', utm_medium: 'referral', utm_campaign: 'landing_page' };
+
+  function decorate(url){
+    try {
+      const u = new URL(url, location.href);
+      if (!/(^|\.)etsy\.com$/.test(u.hostname)) return url;
+      for (const [k, v] of Object.entries(UTM)) {
+        if (!u.searchParams.has(k)) u.searchParams.set(k, v);
+      }
+      return u.toString();
+    } catch { return url; }
+  }
+
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    let host;
+    try { host = new URL(a.href, location.href).hostname; } catch { return; }
+    if (!/(^|\.)etsy\.com$/.test(host)) return;
+
+    a.href = decorate(a.href);
+
+    if (typeof window.pintrk === 'function') {
+      pintrk('track', 'lead', {
+        lead_type: 'etsy_clickthrough',
+        product_name: (a.querySelector('h3') || {}).textContent || 'shop_link'
+      });
+    }
+  }, true);
+})();
 
 /* ==============================================================
    HERO CURSOR EFFECT — a handful of brand-colored dots that scatter
