@@ -44,6 +44,16 @@
     --line: rgba(36,28,21,0.14);
     --shadow: rgba(36,28,21,0.18);
     --focus: #1f6fb2;
+    /* Accent that sits ON TOP of a var(--ink) surface. Because --ink inverts
+       between themes, anything drawn on it needs its own inverting token —
+       a fixed accent goes invisible on the flipped panel. */
+    --accent-on-ink: #e79a2c;
+    /* Coral dark enough that near-white badge text stays legible; --coral
+       itself lightens in dark mode, which killed that contrast. */
+    --coral-badge: #c4401a;
+    /* Coral used as TEXT on a paper surface (needs to be darker than the
+       coral used as a background). */
+    --coral-text: #b83a16;
   }
 
   @media (prefers-color-scheme: dark){
@@ -60,6 +70,9 @@
       --plum:#c199ba;
       --line: rgba(244,233,216,0.16);
       --shadow: rgba(0,0,0,0.45);
+      --accent-on-ink: #7d5210;
+      --coral-badge: #c4401a;
+      --coral-text: #f0754a;
     }
   }
   :root[data-theme="dark"]{
@@ -75,6 +88,9 @@
     --plum:#c199ba;
     --line: rgba(244,233,216,0.16);
     --shadow: rgba(0,0,0,0.45);
+    --accent-on-ink: #7d5210;
+    --coral-badge: #c4401a;
+    --coral-text: #f0754a;
   }
 
   *{ box-sizing:border-box; }
@@ -186,7 +202,7 @@
     display:inline-flex;
     align-items:center;
     gap:8px;
-    background: var(--coral);
+    background: var(--coral-badge);
     color: #fff8ef;
     padding: 7px 16px 7px 12px;
     border-radius: 999px;
@@ -288,7 +304,7 @@
     position:absolute;
     bottom: 6%;
     right: 4%;
-    background: var(--coral);
+    background: var(--coral-badge);
     color:#fff8ef;
     font-family:'Space Mono',monospace;
     font-size:0.72rem;
@@ -345,7 +361,7 @@
     outline-offset: 3px;
   }
   .sticker h3{ transition: color 0.18s ease; }
-  a.sticker:hover h3{ color: var(--coral); }
+  a.sticker:hover h3{ color: var(--coral-text); }
   .sticker .tag{ margin-top: auto; }
   .sticker .shop-cue{
     display:inline-flex;
@@ -354,7 +370,7 @@
     margin-top: 12px;
     font-size: 0.82rem;
     font-weight: 700;
-    color: var(--coral);
+    color: var(--coral-text);
   }
   .sticker .shop-cue svg{ width:14px; height:14px; }
   a.sticker:hover .shop-cue svg{ transform: translateX(3px); }
@@ -441,7 +457,7 @@
   .feature .num{
     font-family:'Space Mono',monospace;
     font-size:0.78rem;
-    color: var(--mustard);
+    color: var(--accent-on-ink);
     letter-spacing:0.08em;
   }
   .feature h3{
@@ -451,7 +467,12 @@
   .feature p{
     margin:0;
     font-size:0.92rem;
-    color: rgba(251,243,231,0.72);
+    /* Must track the panel, not a fixed cream: .feature-strip's background is
+       var(--ink), which inverts to light in dark mode. A hardcoded cream here
+       made this text invisible on the inverted panel. var(--paper) is always
+       the opposite of var(--ink), so this stays readable in both themes. */
+    color: var(--paper);
+    opacity: 0.78;
   }
 
   /* ---------- Values row (honest, non-fabricated proof) ---------- */
@@ -476,7 +497,10 @@
 
   /* ---------- Closing CTA ---------- */
   .closing{
-    background: var(--teal);
+    /* Pinned deep teal in both themes: this panel always carries near-white
+       text, and var(--teal) lightens in dark mode, which dropped the text
+       contrast below readable. */
+    background: #157068;
     color: #eafcf9;
     border-radius: 28px;
     padding: 56px 44px;
@@ -494,7 +518,9 @@
     color: rgba(234,252,249,0.85);
   }
   .closing .hero-ctas{ justify-content:center; margin-top:28px; }
-  .closing .btn-primary{ background:#fbf3e7; color: var(--teal-ink); box-shadow: 4px 5px 0 rgba(0,0,0,0.2); }
+  /* Fixed dark teal on the cream button — var(--teal-ink) turns light in dark
+     mode, which made "Shop on Etsy" wash out into its own background. */
+  .closing .btn-primary{ background:#fbf3e7; color:#0d4642; box-shadow: 4px 5px 0 rgba(0,0,0,0.2); }
   .closing .btn-secondary{ border-color: rgba(234,252,249,0.5); color:#eafcf9; }
   .closing .btn-secondary:hover{ border-color:#fff; color:#fff; }
 
