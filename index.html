@@ -9,10 +9,21 @@
 <!-- Pinterest domain verification (yumikaai.com claimed on the yumikaai account) -->
 <meta name="p:domain_verify" content="fd8b0c789de116fd81bd4f92b4b84d96"/>
 
+<link rel="canonical" href="https://yumikaai.com/">
+
+<meta property="og:site_name" content="Yumikaai">
 <meta property="og:title" content="Yumikaai — Funny 3D Clipart for Crafters">
-<meta property="og:description" content="Funny 3D clipart characters, animals & PNG bundles for crafters, stickers, planners & print on demand. Commercial use included.">
+<meta property="og:description" content="Funny 3D clipart characters, animals &amp; PNG bundles for crafters, stickers, planners &amp; print on demand. Commercial use included.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://yumikaai.com">
+<meta property="og:url" content="https://yumikaai.com/">
+<meta property="og:image" content="https://yumikaai.com/img/hero.jpg">
+<meta property="og:image:alt" content="Yumikaai 3D clipart character bundles">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Yumikaai — Funny 3D Clipart for Crafters">
+<meta name="twitter:description" content="Commercial-use 3D clipart PNG bundles for sublimation, stickers, planners and print on demand.">
+<meta name="twitter:image" content="https://yumikaai.com/img/hero.jpg">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23fbf3e7'/%3E%3Ccircle cx='9' cy='16' r='4' fill='%23e2552b'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%23e79a2c'/%3E%3Ccircle cx='23' cy='16' r='4' fill='%23177f77'/%3E%3C/svg%3E">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -159,7 +170,7 @@
   }
   .hero-canvas{
     position:absolute;
-    inset: -20px;
+    top:0; left:0;
     z-index:0;
     pointer-events:none;
   }
@@ -324,7 +335,46 @@
     clip-path: polygon(0 12px, 12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
     position: relative;
     transition: transform 0.18s ease, box-shadow 0.18s ease;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
   }
+  a.sticker:focus-visible{
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+  .sticker h3{ transition: color 0.18s ease; }
+  a.sticker:hover h3{ color: var(--coral); }
+  .sticker .tag{ margin-top: auto; }
+  .sticker .shop-cue{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top: 12px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--coral);
+  }
+  .sticker .shop-cue svg{ width:14px; height:14px; }
+  a.sticker:hover .shop-cue svg{ transform: translateX(3px); }
+  .sticker .shop-cue svg{ transition: transform 0.18s ease; }
+
+  /* Placeholder cards shown while the live catalog is loading */
+  .sticker.is-loading{
+    pointer-events:none;
+    border-style: dashed;
+  }
+  .sticker.is-loading .photo-frame,
+  .sticker.is-loading .bar{
+    background: var(--line);
+  }
+  .sticker.is-loading .bar{
+    height: 12px;
+    border-radius: 4px;
+    margin-top: 10px;
+  }
+  .sticker.is-loading .bar.short{ width: 55%; }
   .sticker:nth-child(odd){ transform: rotate(-1.1deg); }
   .sticker:nth-child(even){ transform: rotate(1.1deg); }
   .sticker:hover{
@@ -472,8 +522,23 @@
   }
   @media (max-width: 560px){
     .sticker-grid{ grid-template-columns: 1fr; }
-    .topbar nav{ display:none; }
     .closing{ padding: 40px 22px; }
+    /* Keep navigation reachable on phones: wrap it under the wordmark
+       instead of hiding it (it used to display:none, which stranded the
+       Collections / Why / Pinterest links on mobile entirely). */
+    .topbar{ flex-wrap: wrap; row-gap: 14px; }
+    .topbar nav{
+      order: 3;
+      width: 100%;
+      gap: 18px;
+      font-size: 0.9rem;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .topbar nav::-webkit-scrollbar{ display:none; }
+    .topbar nav a{ white-space: nowrap; }
   }
 </style>
 </head>
@@ -530,8 +595,19 @@
       <p>Every bundle ships as transparent PNG at 300 DPI, cleared for sublimation, stickers, print on demand and craft resale. Synced live from the Etsy shop — new drops show up here automatically.</p>
     </div>
     <div class="sticker-grid" id="stickerGrid">
-      <!-- Cards are rendered live from /api/products (see script at the bottom of this file). -->
+      <!-- Cards are rendered live from /api/products (see script at the bottom
+           of this file). These placeholders show while that request is in
+           flight, and are what a visitor with JavaScript disabled keeps. -->
+      <article class="sticker s-coral is-loading" aria-hidden="true"><div class="photo-frame"></div><div class="bar"></div><div class="bar short"></div></article>
+      <article class="sticker s-teal is-loading" aria-hidden="true"><div class="photo-frame"></div><div class="bar"></div><div class="bar short"></div></article>
+      <article class="sticker s-mustard is-loading" aria-hidden="true"><div class="photo-frame"></div><div class="bar"></div><div class="bar short"></div></article>
     </div>
+    <noscript>
+      <p style="margin-top:20px">
+        The live catalog needs JavaScript — browse all the bundles directly on
+        <a href="https://yumikaai.etsy.com" target="_blank" rel="noopener" style="color:var(--coral); font-weight:700">Etsy</a>.
+      </p>
+    </noscript>
   </section>
 
   <section id="why">
@@ -582,6 +658,23 @@
   </footer>
 </div>
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Yumikaai",
+  "url": "https://yumikaai.com/",
+  "description": "Funny 3D clipart characters, animals and PNG bundles for crafters, stickers, planners and print on demand. Commercial use included.",
+  "logo": "https://yumikaai.com/img/hero.jpg",
+  "parentOrganization": { "@type": "Organization", "name": "Midal Agency" },
+  "address": { "@type": "PostalAddress", "addressLocality": "Casablanca", "addressCountry": "MA" },
+  "sameAs": [
+    "https://yumikaai.etsy.com",
+    "https://www.pinterest.com/midalagencyllc/"
+  ]
+}
+</script>
+
 <script>
 /* ==============================================================
    PRODUCT GRID — loaded live from /api/products, a Netlify Function
@@ -602,14 +695,36 @@ async function renderProducts(){
     const products = await res.json();
     if (!Array.isArray(products) || products.length === 0) throw new Error('empty');
 
-    grid.innerHTML = products.map(p => `
-      <article class="sticker s-${p.accent}">
-        <div class="photo-frame"><img src="${p.img}" alt="${escapeHtml(p.title)} — Yumikaai clipart bundle" loading="lazy"></div>
+    // Each card links straight to its Etsy listing — the whole point of
+    // showing the catalog here is to send people to the thing they can buy.
+    grid.innerHTML = products.map((p, i) => `
+      <a class="sticker s-${escapeHtml(p.accent)}" href="${escapeHtml(p.url)}" target="_blank" rel="noopener">
+        <div class="photo-frame"><img src="${escapeHtml(p.img)}" alt="${escapeHtml(p.title)} — Yumikaai clipart bundle" loading="${i < 6 ? 'eager' : 'lazy'}" decoding="async"></div>
         <h3>${escapeHtml(p.title)}</h3>
         <p>${escapeHtml(p.desc)}</p>
         <span class="tag">${escapeHtml(p.tag)}</span>
-      </article>
+        <span class="shop-cue">View on Etsy
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
     `).join('');
+
+    // Tell search engines what's actually in the catalog.
+    const ld = document.createElement('script');
+    ld.type = 'application/ld+json';
+    ld.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "Yumikaai clipart bundles",
+      "numberOfItems": products.length,
+      "itemListElement": products.slice(0, 60).map((p, i) => ({
+        "@type": "ListItem",
+        "position": i + 1,
+        "url": p.url,
+        "name": p.title
+      }))
+    });
+    document.head.appendChild(ld);
   } catch (err) {
     grid.innerHTML = `
       <p style="grid-column:1/-1; color:var(--ink-soft)">

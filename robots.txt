@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# The /api/ paths are the site's own data + image proxy functions, not pages.
+Disallow: /api/
+
+Sitemap: https://yumikaai.com/sitemap.xml
