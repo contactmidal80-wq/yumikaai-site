@@ -8,8 +8,12 @@ const HERO_SRC = "https://i.pinimg.com/736x/3c/ed/fc/3cedfc91311cc8e52ed4f273fd8
 
 function apiKey() {
   const key = process.env.ETSY_API_KEY;
+  const secret = process.env.ETSY_SHARED_SECRET;
+
   if (!key) throw new Error("ETSY_API_KEY is not configured");
-  return key;
+  if (!secret) throw new Error("ETSY_SHARED_SECRET is not configured");
+
+  return `${key}:${secret}`;
 }
 
 async function etsyFetch(path) {
