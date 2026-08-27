@@ -741,7 +741,9 @@ async function renderProducts(){
     if (!Array.isArray(products) || products.length === 0) {
       throw new Error('empty catalog');
     }
-
+  }
+}
+  renderProducts();
     grid.innerHTML = products.map((p, i) => `
       <a class="sticker s-${escapeHtml(p.accent)}"
          href="${escapeHtml(p.url)}"
