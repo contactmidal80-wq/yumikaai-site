@@ -625,7 +625,7 @@ pintrk('page');
         </p>
       </div>
       <div class="hero-visual">
-        <img class="hero-photo" src="/img/hero.jpg" alt="Yumikaai 3D clipart characters — nurse and chef bundle art">
+        <img class="hero-photo" src="img/hero.jpg" alt="Yumikaai 3D clipart characters — nurse and chef bundle art">
         <span class="hero-photo-tag">300 DPI · PNG</span>
       </div>
     </div>
@@ -732,51 +732,50 @@ function escapeHtml(s){
 
 async function renderProducts(){
   const grid = document.getElementById('stickerGrid');
-  try {
-    const res = await fetch('/api/products');
-    if (!res.ok) throw new Error('bad response ' + res.status);
-    const products = await res.json();
-    if (!Array.isArray(products) || products.length === 0) throw new Error('empty');
 
-    // Each card links straight to its Etsy listing — the whole point of
-    // showing the catalog here is to send people to the thing they can buy.
+  try {
+    const res = await fetch('api/products');
+    if (!res.ok) throw new Error('bad response ' + res.status);
+
+    const products = await res.json();
+    if (!Array.isArray(products) || products.length === 0) {
+      throw new Error('empty catalog');
+    }
+
     grid.innerHTML = products.map((p, i) => `
-      <a class="sticker s-${escapeHtml(p.accent)}" href="${escapeHtml(p.url)}" target="_blank" rel="noopener">
-        <div class="photo-frame"><img src="${escapeHtml(p.img)}" alt="${escapeHtml(p.title)} — Yumikaai clipart bundle" loading="${i < 6 ? 'eager' : 'lazy'}" decoding="async"></div>
+      <a class="sticker s-${escapeHtml(p.accent)}"
+         href="${escapeHtml(p.url)}"
+         target="_blank"
+         rel="noopener">
+        <div class="photo-frame">
+          <img
+            src="${escapeHtml(p.img.replace(/^\//, ''))}"
+            alt="${escapeHtml(p.title)} — Yumikaai clipart bundle"
+            loading="${i < 6 ? 'eager' : 'lazy'}"
+            decoding="async">
+        </div>
         <h3>${escapeHtml(p.title)}</h3>
         <p>${escapeHtml(p.desc)}</p>
         <span class="tag">${escapeHtml(p.tag)}</span>
-        <span class="shop-cue">View on Etsy
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        <span class="shop-cue">
+          View on Etsy
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.6" stroke-linecap="round"
+               stroke-linejoin="round">
+            <path d="M5 12h14M13 6l6 6-6 6"/>
+          </svg>
         </span>
       </a>
     `).join('');
-
-    // Tell search engines what's actually in the catalog.
-    const ld = document.createElement('script');
-    ld.type = 'application/ld+json';
-    ld.textContent = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "ItemList",
-      "name": "Yumikaai clipart bundles",
-      "numberOfItems": products.length,
-      "itemListElement": products.slice(0, 60).map((p, i) => ({
-        "@type": "ListItem",
-        "position": i + 1,
-        "url": p.url,
-        "name": p.title
-      }))
-    });
-    document.head.appendChild(ld);
   } catch (err) {
     grid.innerHTML = `
       <p style="grid-column:1/-1; color:var(--ink-soft)">
         Couldn't load the live catalog right now — browse everything directly on
-        <a href="https://yumikaai.etsy.com" target="_blank" rel="noopener" style="color:var(--coral); font-weight:700">Etsy</a>.
+        <a href="https://yumikaai.etsy.com" target="_blank" rel="noopener"
+           style="color:var(--coral); font-weight:700">Etsy</a>.
       </p>`;
   }
 }
-renderProducts();
 
 /* ==============================================================
    ETSY CLICK TRACKING — closes the measurement loop for ads.
