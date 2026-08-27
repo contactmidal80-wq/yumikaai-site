@@ -730,7 +730,7 @@ function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
-async function renderProducts(){
+async function renderProducts() {
   const grid = document.getElementById('stickerGrid');
 
   try {
@@ -741,9 +741,37 @@ async function renderProducts(){
     if (!Array.isArray(products) || products.length === 0) {
       throw new Error('empty catalog');
     }
+
+    grid.innerHTML = products.map((p, i) => `
+      <a class="sticker s-${escapeHtml(p.accent)}"
+         href="${escapeHtml(p.url)}"
+         target="_blank"
+         rel="noopener">
+        <div class="photo-frame">
+          <img
+            src="${escapeHtml(p.img.replace(/^\//, ''))}"
+            alt="${escapeHtml(p.title)} — Yumikaai clipart bundle"
+            loading="${i < 6 ? 'eager' : 'lazy'}"
+            decoding="async">
+        </div>
+        <h3>${escapeHtml(p.title)}</h3>
+        <p>${escapeHtml(p.desc)}</p>
+        <span class="tag">${escapeHtml(p.tag)}</span>
+        <span class="shop-cue">View on Etsy</span>
+      </a>
+    `).join('');
+  } catch (err) {
+    grid.innerHTML = `
+      <p style="grid-column:1/-1; color:var(--ink-soft)">
+        Couldn't load the live catalog right now — browse everything directly on
+        <a href="https://yumikaai.etsy.com" target="_blank" rel="noopener"
+           style="color:var(--coral); font-weight:700">Etsy</a>.
+      </p>`;
   }
 }
-  renderProducts();
+
+renderProducts();
+
     grid.innerHTML = products.map((p, i) => `
       <a class="sticker s-${escapeHtml(p.accent)}"
          href="${escapeHtml(p.url)}"
