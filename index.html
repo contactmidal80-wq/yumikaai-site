@@ -839,9 +839,10 @@ renderProducts();
    click OUT to Etsy is the deepest conversion we can actually measure,
    and it's what Pinterest campaigns should optimize toward.
 
-   Two things happen on every Etsy click:
+   Three things happen on every Etsy click:
    1. pintrk 'lead' — an optimizable Pinterest conversion event.
-   2. UTM parameters are appended, so Etsy's own Shop Stats attributes
+   2. fbq 'Lead' — the equivalent optimizable Meta conversion event.
+   3. UTM parameters are appended, so Etsy's own Shop Stats attributes
       the visit (and any resulting sale) back to this site.
 ================================================================= */
 (function trackEtsyClicks(){
@@ -871,6 +872,13 @@ renderProducts();
       pintrk('track', 'lead', {
         lead_type: 'etsy_clickthrough',
         product_name: (a.querySelector('h3') || {}).textContent || 'shop_link'
+      });
+    }
+
+    if (typeof window.fbq === 'function') {
+      fbq('track', 'Lead', {
+        content_name: (a.querySelector('h3') || {}).textContent || 'Shop on Etsy click',
+        content_category: 'etsy_clickthrough'
       });
     }
   }, true);
