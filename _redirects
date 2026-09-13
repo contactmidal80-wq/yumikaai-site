@@ -8,8 +8,3 @@
 # product grid) -- proxied the same way so the browser never talks to
 # i.pinimg.com directly (common ad-blocker / tracker-protection target).
 /img/hero.jpg                 https://i.pinimg.com/736x/3c/ed/fc/3cedfc91311cc8e52ed4f273fd8bbacb.jpg  200
-
-# Meta (Facebook/Instagram) Shop checkout URL -- see
-# netlify/functions/checkout.js for what this actually does (resolves
-# each catalog product ID back to its Etsy listing and redirects there).
-/checkout                     /.netlify/functions/checkout  200
