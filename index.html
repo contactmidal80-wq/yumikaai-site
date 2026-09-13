@@ -67,7 +67,7 @@ src="https://www.facebook.com/tr?id=1778451573302213&ev=PageView&noscript=1"
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Poppins:wght@600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
   :root{
@@ -580,6 +580,35 @@ src="https://www.facebook.com/tr?id=1778451573302213&ev=PageView&noscript=1"
   footer a{ text-decoration:none; font-weight:600; color: var(--ink-soft); }
   footer a:hover{ color: var(--coral); }
 
+  /* ---------- Creative Fabrica follow button ---------- */
+  #el-1c124c5e.cf-btn{
+    width:250px;
+    height:45px;
+    line-height:45px;
+    border-radius:6px;
+    font-family:Poppins,sans-serif;
+    font-weight:700;
+    font-size:16px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    text-decoration:none;
+    display:inline-block;
+    text-align:center;
+  }
+  #el-1c124c5e.cf-follow{ background:#970b94; color:#fff; }
+  #el-1c124c5e.cf-follow:hover{ background:#570756; color:#fff; }
+  #el-1c124c5e.cf-follow span::before{
+    content:"";
+    background:url("https://www.creativefabrica.com/wp-content/themes/creativefabricanew/v2.0/images/logo-white.svg") no-repeat 0 0;
+    background-size:26px;
+    display:inline-block;
+    width:26px;
+    height:26px;
+    margin-right:5px;
+    position:relative;
+    top:7px;
+  }
+
   @media (max-width: 880px){
     .hero-grid{ grid-template-columns: 1fr; }
     .hero-visual{ height: 300px; order:-1; }
@@ -714,6 +743,7 @@ src="https://www.facebook.com/tr?id=1778451573302213&ev=PageView&noscript=1"
       <div class="hero-ctas">
         <a class="btn-primary" href="https://yumikaai.etsy.com" target="_blank" rel="noopener">Shop on Etsy</a>
         <a class="btn-secondary" href="https://www.pinterest.com/midalagencyllc/" target="_blank" rel="noopener">Follow on Pinterest</a>
+        <a href="https://www.creativefabrica.com/designer/ymikaai?action=follow/" target="_blank" rel="noopener noreferrer" class="cf-btn cf-follow" id="el-1c124c5e"><span>Follow Me on CF</span></a>
       </div>
     </div>
   </section>
