@@ -5,6 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Continue your order on Etsy — Yumikaai</title>
 <!--
+  META PIXEL — same dataset as the main site (Yumika AI Store, ID
+  1778451573302213). Shoppers reach this page from the Facebook /
+  Instagram Shop checkout, so it's the strongest catalog-matching
+  signal we can generate (the URL already carries the exact catalog
+  product IDs). We fire PageView on load and InitiateCheckout with
+  those IDs just before redirecting to Etsy.
+-->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1778451573302213');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1778451573302213&ev=PageView&noscript=1"
+/></noscript>
+<!--
   GET /checkout.html?products=id:qty,id:qty&coupon=CODE
 
   This is the "Checkout URL" Meta Commerce Manager calls when a shopper taps
@@ -183,10 +206,38 @@
   const resolved = ids.map((id) => PRODUCT_LINKS[id]).filter(Boolean);
   const uniqueUrls = Array.from(new Set(resolved));
 
+  // Catalog-matched IDs (the subset of the URL's ids we can actually
+  // resolve to a listing) — this is what Meta needs to see.
+  const matchedCatalogIds = ids.filter((id) => PRODUCT_LINKS[id]);
+
+  // Fire InitiateCheckout with catalog content_ids so Commerce Manager
+  // attributes this session to the Yumika AI Store catalog items. Called
+  // right before the redirect; the small setTimeout gives the pixel
+  // request time to actually leave the browser.
+  function fireInitiateCheckoutThen(cb) {
+    try {
+      if (typeof window.fbq === "function" && matchedCatalogIds.length > 0) {
+        fbq("track", "InitiateCheckout", {
+          content_ids: matchedCatalogIds,
+          content_type: "product",
+          num_items: matchedCatalogIds.length,
+        });
+      }
+    } catch (e) { /* never block the redirect on tracking */ }
+    setTimeout(cb, 300);
+  }
+
+  // Build a reverse map so per-item click handlers can look up the
+  // catalog id from the outbound Etsy URL.
+  const URL_TO_CATALOG_ID = new Map();
+  for (const [cid, url] of Object.entries(PRODUCT_LINKS)) URL_TO_CATALOG_ID.set(url, cid);
+
   if (uniqueUrls.length === 0) {
-    window.location.replace(ETSY_SHOP_URL);
+    // Nothing matched — send them to the shop, but still record the
+    // checkout intent so Meta at least sees a session-level signal.
+    fireInitiateCheckoutThen(() => window.location.replace(ETSY_SHOP_URL));
   } else if (uniqueUrls.length === 1) {
-    window.location.replace(uniqueUrls[0]);
+    fireInitiateCheckoutThen(() => window.location.replace(uniqueUrls[0]));
   } else {
     document.getElementById("spinner").style.display = "none";
     document.getElementById("heading").textContent = "Almost there!";
@@ -204,8 +255,33 @@
         '<span class="num">' + (i + 1) + '</span>' +
         '<span class="label">Continue to item ' + (i + 1) + ' on Etsy</span>' +
         '<span class="arrow">&rarr;</span>';
+
+      // Each per-item click is a concrete AddToCart for that catalog id.
+      a.addEventListener("click", () => {
+        try {
+          const cid = URL_TO_CATALOG_ID.get(url);
+          if (typeof window.fbq === "function" && cid) {
+            fbq("track", "AddToCart", {
+              content_ids: [cid],
+              content_type: "product",
+            });
+          }
+        } catch (e) { /* never block the outbound click */ }
+      });
+
       itemsDiv.appendChild(a);
     });
+
+    // Still fire InitiateCheckout for the multi-item landing itself.
+    if (typeof window.fbq === "function" && matchedCatalogIds.length > 0) {
+      try {
+        fbq("track", "InitiateCheckout", {
+          content_ids: matchedCatalogIds,
+          content_type: "product",
+          num_items: matchedCatalogIds.length,
+        });
+      } catch (e) {}
+    }
   }
 </script>
 </body>

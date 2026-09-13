@@ -783,6 +783,10 @@ async function renderProducts() {
         <span class="shop-cue">View on Etsy</span>
       </a>
     `).join('');
+
+    // Signal catalog-aware trackers (Meta ViewContent, etc.) that a fresh
+    // batch of product cards is now in the DOM and can be observed.
+    document.dispatchEvent(new CustomEvent('yumika:grid-updated'));
   } catch (err) {
     grid.innerHTML = `
       <p style="grid-column:1/-1; color:var(--ink-soft)">
@@ -831,6 +835,115 @@ renderProducts();
   }
 }
 */
+
+/* ==============================================================
+   META CATALOG EVENT TRACKING — fires ViewContent and AddToCart
+   carrying content_ids that MATCH the Yumika AI Store catalog feed,
+   so Commerce Manager can attribute site interactions to specific
+   catalog items. Without this the "Catalogue match rate" sits at 0%
+   and Meta Advantage+ catalog ads can't be used.
+
+   The catalog uses opaque 12-char hex product IDs (see
+   data/product-links.json); the front-end grid identifies each
+   product by its Etsy listing ID, so we build a reverse map at load
+   time and translate one to the other at event time.
+
+   Purchase events are intentionally NOT fired here — checkout
+   happens on etsy.com, which we can't instrument. AddToCart on the
+   Etsy click-through is the deepest catalog-matched conversion we
+   can measure.
+================================================================= */
+(function metaCatalogTracking(){
+  // A single Etsy listing can appear in the Meta catalog under more than one
+  // product id (e.g. French + English variants of the same bundle) — so the
+  // reverse map stores an ARRAY of catalog ids per Etsy listing. Sending all
+  // matching ids in content_ids maximizes the match rate.
+  let etsyToCatalog = null;                 // Map<etsyListingId, string[]>
+  let mapReady;                             // Promise<Map> — resolves once
+
+  function loadCatalogMap(){
+    if (mapReady) return mapReady;
+    mapReady = fetch('data/product-links.json', { cache: 'force-cache' })
+      .then(r => r.ok ? r.json() : {})
+      .then(json => {
+        etsyToCatalog = new Map();
+        for (const [catalogId, url] of Object.entries(json || {})) {
+          const m = /\/listing\/(\d+)/.exec(url || '');
+          if (!m) continue;
+          const list = etsyToCatalog.get(m[1]) || [];
+          list.push(catalogId);
+          etsyToCatalog.set(m[1], list);
+        }
+        return etsyToCatalog;
+      })
+      .catch(() => (etsyToCatalog = new Map()));
+    return mapReady;
+  }
+
+  function catalogIdsForUrl(url){
+    if (!etsyToCatalog) return [];
+    const m = /\/listing\/(\d+)/.exec(url || '');
+    return m ? (etsyToCatalog.get(m[1]) || []) : [];
+  }
+
+  // Fire ViewContent once per card the visitor actually sees.
+  async function observeCards(){
+    if (typeof window.fbq !== 'function') return;
+    if (typeof IntersectionObserver !== 'function') return;
+    await loadCatalogMap();
+
+    const cards = document.querySelectorAll(
+      '#stickerGrid a.sticker[href*="etsy.com"]:not([data-mtracked])'
+    );
+    if (!cards.length) return;
+
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const card = entry.target;
+        io.unobserve(card);
+        if (card.dataset.mtracked === '1') continue;
+        const cids = catalogIdsForUrl(card.href);
+        if (!cids.length) continue;
+        card.dataset.mtracked = '1';
+        fbq('track', 'ViewContent', {
+          content_ids: cids,
+          content_type: 'product',
+          content_name: (card.querySelector('h3') || {}).textContent || undefined
+        });
+      }
+    }, { rootMargin: '120px 0px', threshold: 0.25 });
+
+    cards.forEach(c => io.observe(c));
+  }
+
+  // Fire AddToCart on every Etsy click-through. This sits alongside the
+  // existing Lead event below — Lead stays as the ad-optimization event
+  // (both Pinterest and Meta), AddToCart carries the catalog id so it
+  // shows up as a matched catalogue event in Commerce Manager.
+  document.addEventListener('click', (e) => {
+    if (typeof window.fbq !== 'function') return;
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    let host;
+    try { host = new URL(a.href, location.href).hostname; } catch { return; }
+    if (!/(^|\.)etsy\.com$/.test(host)) return;
+    const cids = catalogIdsForUrl(a.href);
+    if (!cids.length) return;
+    fbq('track', 'AddToCart', {
+      content_ids: cids,
+      content_type: 'product',
+      content_name: (a.querySelector('h3') || {}).textContent || undefined
+    });
+  }, true);
+
+  // Start the map load early, and observe whenever the grid (re)renders.
+  loadCatalogMap();
+  document.addEventListener('yumika:grid-updated', observeCards);
+  // Also try immediately in case the grid was already populated.
+  if (document.readyState !== 'loading') observeCards();
+  else document.addEventListener('DOMContentLoaded', observeCards);
+})();
 
 /* ==============================================================
    ETSY CLICK TRACKING — closes the measurement loop for ads.
